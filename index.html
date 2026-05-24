@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MagazinOnline</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- NAVBAR — filled automatically by navbar.js -->
+    <div id="navbar"></div>
+
+    <!-- HERO SECTION -->
+    <section class="hero">
+        <h1>Welcome to MagazinOnline!</h1>
+        <p>Start Shopping now!</p>
+        <div class="hero-search">
+            <input type="text" id="searchInput" placeholder="Search products...">
+            <button onclick="window.location.href='shop.html'">Shop</button>
+        </div>
+    </section>
+
+    <!-- FEATURED CATEGORIES — hardcoded, decorative only -->
+    <div class="page-wrapper">
+        <h2 class="section-title" style="text-align:center; margin-bottom: 32px;">
+            Our Products
+        </h2>
+        <div class="category-grid">
+
+            <div class="category-card">
+                <div class="category-img">
+                    <img src="images/electronics.svg" alt="Electronics">
+                </div>
+                <p>Electronics</p>
+            </div>
+
+            <div class="category-card">
+                <div class="category-img">
+                    <img src="images/furniture.svg" alt="Home & Furniture">
+                </div>
+                <p>Home & Furniture</p>
+            </div>
+
+            <div class="category-card">
+                <div class="category-img">
+                    <img src="images/sport.svg" alt="Hobby & Sport">
+                </div>
+                <p>Hobby & Sport</p>
+            </div>
+
+        </div>
+
+        <!-- SELLER CTA BANNER -->
+        <div class="cta-banner">
+            <h2>New entrepreneur?</h2>
+            <p>Start Selling now!</p>
+            <a href="register.html" class="btn btn-primary">Register as Seller</a>
+        </div>
+
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+        <span>MagazinOnline</span>
+        <div>
+            <a href="index.html">Home</a>
+            <a href="shop.html">Shop</a>
+        </div>
+    </footer>
+
+    <!-- SCRIPTS — order matters! auth first, then navbar -->
+    <script src="js/auth.js"></script>
+    <script src="js/navbar.js"></script>
+
+</body>
+</html>

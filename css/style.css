@@ -1,0 +1,562 @@
+/* ============ COLOR VARIABLES ============ */
+:root {
+    --white:      #FFFFFF;
+    --blue-grey:  #5C6784;
+    --navy:       #1D263B;
+
+    --grey-light: #f4f5f7;
+    --grey-mid:   #e0e2e8;
+    --grey-text:  #6b7280;
+
+    --success:    #4caf7d;
+    --error:      #e05c5c;
+    --warning:    #f0a500;
+}
+
+/* ============ RESET & BASE ============ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--white);
+    color: var(--navy);
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* ============ NAVBAR ============ */
+#navbar {
+    background-color: var(--navy);
+    padding: 0 40px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.navbar-left {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+}
+
+.navbar-brand {
+    color: var(--white);
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.navbar-links {
+    display: flex;
+    gap: 24px;
+}
+
+.navbar-links a {
+    color: var(--grey-mid);
+    font-size: 0.95rem;
+    transition: color 0.2s;
+}
+
+.navbar-links a:hover {
+    color: var(--white);
+}
+
+.navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* ============ DROPDOWN ============ */
+.dropdown {
+    position: relative;
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: calc(100% + 8px);
+    background-color: var(--white);
+    border: 1px solid var(--grey-mid);
+    border-radius: 8px;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    overflow: hidden;
+    z-index: 999;
+}
+
+.dropdown-menu.open {
+    display: block;
+}
+
+.dropdown-menu a {
+    display: block;
+    padding: 12px 16px;
+    color: var(--navy);
+    font-size: 0.9rem;
+    transition: background 0.15s;
+}
+
+.dropdown-menu a:hover {
+    background-color: var(--grey-light);
+    color: var(--blue-grey);
+}
+
+/* ============ BUTTONS ============ */
+.btn {
+    padding: 8px 20px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+    display: inline-block;
+}
+
+.btn-primary {
+    background-color: var(--blue-grey);
+    color: var(--white);
+}
+
+.btn-primary:hover {
+    background-color: var(--navy);
+}
+
+.btn-outline {
+    background-color: transparent;
+    color: var(--white);
+    border: 1px solid var(--grey-mid);
+}
+
+.btn-outline:hover {
+    background-color: var(--blue-grey);
+    border-color: var(--blue-grey);
+}
+
+.btn-danger {
+    background-color: var(--error);
+    color: var(--white);
+}
+
+.btn-danger:hover {
+    background-color: #c0392b;
+}
+
+.btn-success {
+    background-color: var(--success);
+    color: var(--white);
+}
+
+.btn-success:hover {
+    background-color: #3a9d6a;
+}
+
+/* ============ LAYOUT ============ */
+.page-wrapper {
+    min-height: calc(100vh - 60px);
+    padding: 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.page-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 32px;
+    text-align: center;
+}
+
+.section-title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--navy);
+    margin-bottom: 20px;
+}
+
+/* ============ CARDS ============ */
+.card {
+    background-color: var(--white);
+    border: 1px solid var(--grey-mid);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+}
+
+.card:hover {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.card-img {
+    width: 100%;
+    height: 180px;
+    background-color: var(--grey-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--grey-text);
+    font-size: 0.85rem;
+}
+
+.card-body {
+    padding: 16px;
+}
+
+.card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--navy);
+    margin-bottom: 4px;
+}
+
+.card-price {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--blue-grey);
+    margin-bottom: 6px;
+}
+
+.card-description {
+    font-size: 0.85rem;
+    color: var(--grey-text);
+    margin-bottom: 12px;
+}
+
+.card-seller {
+    font-size: 0.8rem;
+    color: var(--grey-text);
+    margin-bottom: 12px;
+}
+
+/* ============ PRODUCT GRID ============ */
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 24px;
+}
+
+/* ============ BADGES ============ */
+.badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.badge-negotiable {
+    background-color: var(--blue-grey);
+    color: var(--white);
+}
+
+.badge-fixed {
+    background-color: var(--grey-mid);
+    color: var(--navy);
+}
+
+.badge-active {
+    background-color: var(--success);
+    color: var(--white);
+}
+
+.badge-deactivated {
+    background-color: var(--error);
+    color: var(--white);
+}
+
+.badge-pending {
+    background-color: var(--warning);
+    color: var(--white);
+}
+
+/* ============ FORMS ============ */
+.form-wrapper {
+    max-width: 480px;
+    margin: 60px auto;
+    background-color: var(--white);
+    border: 1px solid var(--grey-mid);
+    border-radius: 12px;
+    padding: 40px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+}
+
+.form-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 28px;
+    text-align: center;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--navy);
+    margin-bottom: 6px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--grey-mid);
+    border-radius: 6px;
+    font-size: 0.95rem;
+    color: var(--navy);
+    background-color: var(--white);
+    transition: border-color 0.2s;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--blue-grey);
+}
+
+.form-link {
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--grey-text);
+    margin-top: 16px;
+}
+
+.form-link a {
+    color: var(--blue-grey);
+    font-weight: 500;
+}
+
+.form-link a:hover {
+    text-decoration: underline;
+}
+
+/* ============ MESSAGES ============ */
+.message {
+    padding: 12px 16px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+.message-success {
+    background-color: #eaf7ef;
+    color: var(--success);
+    border: 1px solid var(--success);
+}
+
+.message-error {
+    background-color: #fdecea;
+    color: var(--error);
+    border: 1px solid var(--error);
+}
+
+.message-warning {
+    background-color: #fff8e1;
+    color: var(--warning);
+    border: 1px solid var(--warning);
+}
+
+.message-info {
+    background-color: #eef1f7;
+    color: var(--blue-grey);
+    border: 1px solid var(--blue-grey);
+}
+
+/* ============ HERO SECTION ============ */
+.hero {
+    background-color: var(--navy);
+    color: var(--white);
+    padding: 80px 40px;
+    text-align: center;
+}
+
+.hero h1 {
+    font-size: 2.4rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.hero p {
+    font-size: 1.1rem;
+    color: var(--grey-mid);
+    margin-bottom: 28px;
+}
+
+.hero-search {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.hero-search input {
+    flex: 1;
+    padding: 12px 18px;
+    border: none;
+    border-radius: 6px 0 0 6px;
+    font-size: 0.95rem;
+    outline: none;
+}
+
+.hero-search button {
+    padding: 12px 24px;
+    background-color: var(--blue-grey);
+    color: var(--white);
+    border: none;
+    border-radius: 0 6px 6px 0;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: background 0.2s;
+}
+
+.hero-search button:hover {
+    background-color: #4a5570;
+}
+
+/* ============ SELLER CTA BANNER ============ */
+.cta-banner {
+    background-color: var(--grey-light);
+    border: 1px solid var(--grey-mid);
+    border-radius: 12px;
+    padding: 48px 40px;
+    text-align: center;
+    margin: 48px 0;
+}
+
+.cta-banner h2 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 8px;
+}
+
+.cta-banner p {
+    color: var(--grey-text);
+    margin-bottom: 20px;
+}
+
+/* ============ FOOTER ============ */
+footer {
+    background-color: var(--navy);
+    color: var(--grey-mid);
+    padding: 24px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+}
+
+footer a {
+    color: var(--grey-mid);
+    margin-left: 20px;
+    transition: color 0.2s;
+}
+
+footer a:hover {
+    color: var(--white);
+}
+
+/* ============ TABLE (for admin/history) ============ */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.data-table th {
+    background-color: var(--navy);
+    color: var(--white);
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 500;
+}
+
+.data-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--grey-mid);
+    color: var(--navy);
+}
+
+.data-table tr:hover td {
+    background-color: var(--grey-light);
+}
+
+/* ============ EMPTY STATE ============ */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--grey-text);
+}
+
+.empty-state p {
+    font-size: 1rem;
+    margin-bottom: 16px;
+}
+
+/* ============ CATEGORY CARDS ============ */
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-bottom: 48px;
+}
+
+.category-card:hover {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.category-card {
+    border: 1px solid var(--grey-mid);
+    border-radius: 12px;
+    overflow: hidden;
+    text-align: center;
+    transition: box-shadow 0.2s;
+    padding-bottom: 0;
+}
+
+.category-img {
+    background-color: var(--grey-light);
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0;
+    overflow: hidden;
+}
+
+.category-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    padding: 0;
+    display: block;
+}
+
+.category-card p {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--navy);
+    padding: 14px 0;
+    background-color: var(--white);
+}
