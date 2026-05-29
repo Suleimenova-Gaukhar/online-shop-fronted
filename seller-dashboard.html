@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Business — MagazinOnline</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <div id="navbar"></div>
+
+    <div class="page-wrapper">
+
+        <h1 class="page-title">My Business</h1>
+
+        <!-- ============ PENDING OFFERS SECTION ============ -->
+        <div class="dashboard-section">
+            <h2 class="section-title">Pending Requests</h2>
+            <div id="offersMessage" class="message" style="display:none;"></div>
+            <div id="offersList"></div>
+            <div id="offersEmpty" class="empty-state" style="display:none;">
+                <p>No pending offers at the moment.</p>
+            </div>
+        </div>
+
+        <!-- ============ MY PRODUCTS SECTION ============ -->
+        <div class="dashboard-section">
+            <h2 class="section-title">My Products</h2>
+            <div id="productsMessage" class="message" style="display:none;"></div>
+            <div class="product-grid" id="myProductsGrid"></div>
+            <div id="productsEmpty" class="empty-state" style="display:none;">
+                <p>You haven't added any products yet.</p>
+            </div>
+        </div>
+
+        <!-- ============ ADD PRODUCT SECTION ============ -->
+        <div class="dashboard-section">
+            <h2 class="section-title">Add New Product</h2>
+            <div id="addMessage" class="message" style="display:none;"></div>
+            <div class="add-product-form">
+
+                <div class="form-group">
+                    <label>Product Name</label>
+                    <input type="text" id="productName" placeholder="Enter product name">
+                </div>
+
+                <div class="form-group">
+                    <label>Price (€)</label>
+                    <input type="number" id="productPrice" placeholder="Enter price">
+                </div>
+
+                <div class="form-group">
+                    <label>Description</label>
+                    <input type="text" id="productDescription" 
+                        placeholder="Enter product description">
+                </div>
+
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="productNegotiable" 
+                            onchange="toggleMinPrice()">
+                        <span>This product is negotiable</span>
+                    </label>
+                </div>
+
+                <div class="form-group" id="minPriceGroup" style="display:none;">
+                    <label>Minimum Price (€)</label>
+                    <input type="number" id="productMinPrice" 
+                        placeholder="Enter minimum accepted price">
+                </div>
+
+                <button class="btn btn-primary" onclick="handleAddProduct()">
+                    Add Product
+                </button>
+
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        <span>MagazinOnline</span>
+        <div>
+            <a href="index.html">Home</a>
+            <a href="shop.html">Shop</a>
+        </div>
+    </footer>
+
+    <script src="js/auth.js"></script>
+    <script src="js/navbar.js"></script>
+    <script src="js/api.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Must be logged in as seller
+            if (!isLoggedIn() || !isRole('SELLER')) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            await loadOffers();
+            await loadMyProducts();
+        });
+
+        // ============ OFFERS ============
+        async function loadOffers() {
+            const user = getUser();
+            const offersList = document.getElementById('offersList');
+            const offersEmpty = document.getElementById('offersEmpty');
+
+            // Clear everything first
+            offersList.innerHTML = '';
+            offersEmpty.style.display = 'none';
+
+            try {
+                const offers = await getOffersBySellerEmail(user.email);
+                const pending = offers.filter(o => o.status === 'PENDING');
+
+                if (pending.length === 0) {
+                    offersEmpty.style.display = 'block';
+                    return;
+                }
+
+                offersList.innerHTML = pending.map(offer => `
+                    <div class="offer-card">
+                        <div class="offer-info">
+                            <div class="offer-product">${offer.product.name}</div>
+                            <div class="offer-buyer">Buyer: ${offer.buyer.email}</div>
+                            <div class="offer-price">
+                                Offered price: 
+                                <strong>€${offer.offeredPrice.toFixed(2)}</strong>
+                                (original: €${offer.product.price.toFixed(2)})
+                            </div>
+                        </div>
+                        <div class="offer-actions">
+                            <button class="btn btn-success" 
+                                onclick="handleApprove(${offer.id})">
+                                Accept
+                            </button>
+                            <button class="btn btn-danger" 
+                                onclick="handleReject(${offer.id})">
+                                Reject
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                showSectionMessage('offersMessage', 'Cannot load offers.', 'error');
+            }
+        }
+
+        async function handleApprove(offerId) {
+            const user = getUser();
+            const response = await approveOffer(offerId, user.email);
+            if (response.includes('approved')) {
+                showSectionMessage('offersMessage', 
+                    'Offer approved successfully!', 'success');
+                await loadOffers();
+            } else {
+                showSectionMessage('offersMessage', response, 'error');
+            }
+        }
+
+        async function handleReject(offerId) {
+            const user = getUser();
+            const response = await rejectOffer(offerId, user.email);
+            if (response.includes('rejected')) {
+                showSectionMessage('offersMessage', 
+                    'Offer rejected.', 'success');
+                await loadOffers();
+            } else {
+                showSectionMessage('offersMessage', response, 'error');
+            }
+        }
+
+        // ============ PRODUCTS ============
+        async function loadMyProducts() {
+            const user = getUser();
+            try {
+                const allProducts = await getAllProducts();
+                const myProducts = allProducts.filter(
+                    p => p.sellerEmail === user.email
+                );
+
+                if (myProducts.length === 0) {
+                    document.getElementById('productsEmpty').style.display = 'block';
+                    return;
+                }
+
+                document.getElementById('myProductsGrid').innerHTML = 
+                    myProducts.map(product => `
+                        <div class="card">
+                            <div class="card-body">
+                                <span class="badge ${product.negotiable ? 
+                                    'badge-negotiable' : 'badge-fixed'}">
+                                    ${product.negotiable ? 'Negotiable' : 'Fixed Price'}
+                                </span>
+                                <div class="card-title">${product.name}</div>
+                                <div class="card-price">€${product.price.toFixed(2)}</div>
+                                <div class="card-description">${product.description}</div>
+                                <button class="btn btn-danger" 
+                                    style="width:100%; margin-top:8px;"
+                                    onclick="handleDelete(${product.id})">
+                                    Delete Product
+                                </button>
+                            </div>
+                        </div>
+                    `).join('');
+
+            } catch (error) {
+                showSectionMessage('productsMessage', 
+                    'Cannot load products.', 'error');
+            }
+        }
+
+        async function handleDelete(productId) {
+            if (!confirm('Are you sure you want to delete this product?')) return;
+
+            const user = getUser();
+            const response = await deleteProduct(productId, user.email);
+
+            if (response.includes('successfully')) {
+                showSectionMessage('productsMessage', 
+                    'Product deleted successfully!', 'success');
+                await loadMyProducts();
+            } else {
+                showSectionMessage('productsMessage', response, 'error');
+            }
+        }
+
+        // ============ ADD PRODUCT ============
+        function toggleMinPrice() {
+            const negotiable = document.getElementById('productNegotiable').checked;
+            document.getElementById('minPriceGroup').style.display = 
+                negotiable ? 'block' : 'none';
+        }
+
+        async function handleAddProduct() {
+            const name = document.getElementById('productName').value.trim();
+            const price = parseFloat(document.getElementById('productPrice').value);
+            const description = document.getElementById('productDescription').value.trim();
+            const negotiable = document.getElementById('productNegotiable').checked;
+            const minPrice = parseFloat(
+                document.getElementById('productMinPrice').value
+            );
+
+            if (!name || !price || !description) {
+                showSectionMessage('addMessage', 
+                    'Please fill in all fields.', 'error');
+                return;
+            }
+
+            if (negotiable && !minPrice) {
+                showSectionMessage('addMessage', 
+                    'Please enter a minimum price for negotiable products.', 'error');
+                return;
+            }
+
+            const user = getUser();
+            const response = await addProduct(
+                name, price, description, negotiable,
+                negotiable ? minPrice : null,
+                user.email
+            );
+
+            if (response.includes('successfully')) {
+                showSectionMessage('addMessage', 
+                    'Product added successfully!', 'success');
+                // Clear form
+                document.getElementById('productName').value = '';
+                document.getElementById('productPrice').value = '';
+                document.getElementById('productDescription').value = '';
+                document.getElementById('productNegotiable').checked = false;
+                document.getElementById('productMinPrice').value = '';
+                document.getElementById('minPriceGroup').style.display = 'none';
+                await loadMyProducts();
+            } else {
+                showSectionMessage('addMessage', response, 'error');
+            }
+        }
+
+        // ============ HELPERS ============
+        function showSectionMessage(elementId, text, type) {
+            const box = document.getElementById(elementId);
+            box.textContent = text;
+            box.className = `message message-${type}`;
+            box.style.display = 'block';
+            setTimeout(() => box.style.display = 'none', 4000);
+        }
+    </script>
+
+</body>
+</html>

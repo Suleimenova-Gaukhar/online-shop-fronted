@@ -26,7 +26,7 @@ function buildNavbar() {
                 <a href="register.html" class="btn btn-primary">Sign Up</a>
             </div>
         `;
-    } else if (user.role === 'Role: BUYER') {
+    } else if (user.role === 'BUYER') {
         // Logged in as buyer
         rightSide = `
             <div class="navbar-right">
@@ -41,7 +41,7 @@ function buildNavbar() {
                 </div>
             </div>
         `;
-    } else if (user.role === 'Role: SELLER') {
+    } else if (user.role === 'SELLER') {
         // Logged in as seller
         rightSide = `
             <div class="navbar-right">
@@ -57,7 +57,7 @@ function buildNavbar() {
                 </div>
             </div>
         `;
-    } else if (user.role === 'Role: ADMIN') {
+    } else if (user.role === 'ADMIN') {
         // Logged in as admin
         rightSide = `
             <div class="navbar-right">

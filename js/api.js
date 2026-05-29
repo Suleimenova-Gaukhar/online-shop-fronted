@@ -84,9 +84,17 @@ async function getOffersBySellerEmail(sellerEmail) {
 
 // Get a specific buyer's offer for a specific product
 async function getOfferByProductAndBuyer(productId, buyerEmail) {
-    const response = await fetch(`${BASE_URL}/offers/${productId}/buyer?buyerEmail=${buyerEmail}`);
-    if (response.status === 404) return null; // no offer exists yet
-    return response.json();
+    try {
+        const response = await fetch(
+            `${BASE_URL}/offers/${productId}/buyer?buyerEmail=${buyerEmail}`
+        );
+        if (!response.ok) return null; // handles 404, 500, any error
+        const text = await response.text();
+        if (!text || text.trim() === '') return null;
+        return JSON.parse(text);
+    } catch(e) {
+        return null;
+    }
 }
 
 // ============ PURCHASE ============

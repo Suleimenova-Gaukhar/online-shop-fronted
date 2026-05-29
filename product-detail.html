@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Detail — MagazinOnline</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <div id="navbar"></div>
+
+    <!-- PAGE CONTENT -->
+    <div class="page-wrapper">
+
+
+    <!-- SUCCESS SCREEN — at the top -->
+    <div id="successScreen" style="display:none;">
+        <div class="success-screen">
+            <div class="success-icon">✓</div>
+            <h2>Purchase Successful!</h2>
+            <p>You bought <strong id="successProductName"></strong></p>
+            <p class="success-price">Final price: €<span id="successPrice"></span></p>
+            <p class="success-note">Redirecting to shop in 4 seconds...</p>
+            <a href="shop.html" class="btn btn-primary" style="margin-top: 24px;">
+                Back to Shop
+            </a>
+        </div>
+    </div>
+
+        <!-- BACK BUTTON -->
+        <a href="shop.html" class="btn btn-outline" 
+            style="color:var(--navy); border-color:var(--grey-mid); 
+                   margin-bottom:32px; display:inline-block;">
+            ← Back to Shop
+        </a>
+
+        <!-- ERROR MESSAGE -->
+        <div id="message" class="message" style="display:none;"></div>
+
+        <!-- PRODUCT DETAIL CARD -->
+        <div id="productDetail" style="display:none;">
+
+            <div class="product-detail-card">
+
+                <!-- LEFT — product info -->
+                <div class="product-detail-info">
+                    <span class="badge" id="negotiableBadge"></span>
+                    <h1 class="product-detail-name" id="productName"></h1>
+                    <div class="product-detail-price" id="productPrice"></div>
+                    <div class="product-detail-seller" id="productSeller"></div>
+                    <p class="product-detail-description" id="productDescription"></p>
+                </div>
+
+                <!-- RIGHT — actions -->
+                <div class="product-detail-actions">
+
+                    <!-- Action message (offer status etc) -->
+                    <div id="actionMessage" class="message" style="display:none;"></div>
+
+                    <!-- STATE 1: negotiable, no offer yet -->
+                        <div id="state1" style="display:none;">
+                            <p class="action-label">Negotiate the price with the seller</p>
+                            <div class="offer-input-row">
+                                <input 
+                                    type="number" 
+                                    id="offerPrice" 
+                                    placeholder="Your offer price (€)"
+                                    class="offer-input"
+                                >
+                                <button class="btn btn-primary" onclick="submitOffer()">
+                                    Request
+                                </button>
+                            </div>
+                            <p class="action-note">
+                                ⚠️ Negotiation may take 2-3 business days depending on the seller.
+                            </p>
+                        </div>
+
+                    <!-- STATE 1b: negotiable, offer PENDING -->
+                        <div id="state1b" style="display:none;">
+                            <div class="message message-info">
+                                Your offer has been sent! Waiting for the seller to respond.
+                            </div>
+                            <p class="action-note">
+                                ⚠️ Negotiation may take 2-3 business days depending on the seller.
+                            </p>
+                        </div>
+
+                    <!-- STATE 2: fixed price only -->
+                    <div id="state2" style="display:none;">
+                        <div class="message message-info">
+                            The price is fixed and can't be negotiated!
+                        </div>
+                        <button class="btn btn-primary btn-full" onclick="buyFixed()">
+                            Buy for fixed price (€<span id="fixedPrice2"></span>)
+                        </button>
+                    </div>
+
+                    <!-- STATE 3: offer REJECTED -->
+                        <div id="state3" style="display:none;">
+                            <div class="message message-error">
+                                Your previous offer was declined by the seller. Please try again with a higher price.
+                            </div>
+                            <div class="offer-input-row">
+                                <input 
+                                    type="number" 
+                                    id="offerPriceRetry" 
+                                    placeholder="Your new offer price (€)"
+                                    class="offer-input"
+                                >
+                                <button class="btn btn-primary" onclick="submitOfferRetry()">
+                                    Request
+                                </button>
+                            </div>
+                            <p class="action-note">
+                                ⚠️ Negotiation may take 2-3 business days depending on the seller.
+                            </p>
+                        </div>
+
+                    <!-- STATE 4: offer APPROVED -->
+                    <div id="state4" style="display:none;">
+                        <div class="message message-success">
+                            Your negotiation offer has been approved by the seller!
+                        </div>
+                        <button class="btn btn-success btn-full" onclick="buyApproved()">
+                            Buy for (€<span id="approvedPrice"></span>)
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- FOOTER -->
+    <footer>
+        <span>MagazinOnline</span>
+        <div>
+            <a href="index.html">Home</a>
+            <a href="shop.html">Shop</a>
+        </div>
+    </footer>
+
+    <script src="js/auth.js"></script>
+    <script src="js/navbar.js"></script>
+    <script src="js/api.js"></script>
+    <script>
+        let currentProduct = null;
+    let currentOffer = null;
+
+    document.addEventListener('DOMContentLoaded', async function() {
+        if (!isLoggedIn()) {
+            window.location.href = 'login.html';
+            return;
+        }
+
+        const params = new URLSearchParams(window.location.search);
+        const productId = params.get('id');
+
+        if (!productId) {
+            showMessage('Product not found.', 'error');
+            return;
+        }
+
+        try {
+            const products = await getAllProducts();
+            currentProduct = products.find(p => p.id == productId);
+
+            if (!currentProduct) {
+                showMessage('Product not found or no longer available.', 'error');
+                return;
+            }
+
+            // Fill in product info
+            document.getElementById('productName').textContent = currentProduct.name;
+            document.getElementById('productPrice').textContent = 
+                `€${currentProduct.price.toFixed(2)}`;
+            document.getElementById('productSeller').textContent = 
+                `Seller: ${currentProduct.sellerEmail}`;
+            document.getElementById('productDescription').textContent = 
+                currentProduct.description;
+
+            const badge = document.getElementById('negotiableBadge');
+            badge.textContent = currentProduct.negotiable ? 'Negotiable' : 'Fixed Price';
+            badge.className = `badge ${currentProduct.negotiable ? 
+                'badge-negotiable' : 'badge-fixed'}`;
+
+            document.getElementById('productDetail').style.display = 'block';
+
+            if (!currentProduct.negotiable) {
+                showState('state2');
+                document.getElementById('fixedPrice2').textContent = 
+                    currentProduct.price.toFixed(2);
+            } else {
+                const user = getUser();
+                currentOffer = await getOfferByProductAndBuyer(
+                    currentProduct.id, user.email
+                );
+
+                if (!currentOffer) {
+                    showState('state1');
+                } else if (currentOffer.status === 'PENDING') {
+                    showState('state1b');
+                } else if (currentOffer.status === 'REJECTED') {
+                    showState('state3');
+                } else if (currentOffer.status === 'APPROVED') {
+                    showState('state4');
+                    document.getElementById('approvedPrice').textContent = 
+                        currentOffer.offeredPrice.toFixed(2);
+                }
+            }
+
+        } catch (error) {
+            console.log('Error:', error);
+            showMessage('Cannot connect to server. Make sure the backend is running.', 'error');
+        }
+    });
+
+    async function submitOffer() {
+    const priceInput = document.getElementById('offerPrice');
+    const price = parseFloat(priceInput.value);
+
+    if (!price || price <= 0) {
+        showActionMessage('Please enter a valid price.', 'error');
+        return;
+    }
+
+    const user = getUser();
+    const response = await makeOffer(currentProduct.id, user.email, price);
+
+    if (response.includes('successfully')) {
+        showActionMessage('Offer sent successfully!', 'success');
+        setTimeout(() => location.reload(), 1500);
+    } else {
+        // Show whatever the backend returns directly
+        showActionMessage(response, 'error');
+    }
+}
+
+async function submitOfferRetry() {
+    const priceInput = document.getElementById('offerPriceRetry');
+    const price = parseFloat(priceInput.value);
+
+    if (!price || price <= 0) {
+        showActionMessage('Please enter a valid price.', 'error');
+        return;
+    }
+
+    const user = getUser();
+    const response = await makeOffer(currentProduct.id, user.email, price);
+
+    if (response.includes('successfully')) {
+        showActionMessage('New offer sent successfully!', 'success');
+        setTimeout(() => location.reload(), 1500);
+    } else {
+        showActionMessage(response, 'error');
+    }
+}
+
+    async function buyFixed() {
+        const user = getUser();
+        const response = await purchaseProduct(currentProduct.id, user.email);
+        if (response.includes('successful')) {
+            showSuccessScreen(currentProduct.price.toFixed(2));
+        } else {
+            showActionMessage(response, 'error');
+        }
+    }
+
+    async function buyApproved() {
+        const user = getUser();
+        const response = await purchaseProduct(currentProduct.id, user.email);
+        if (response.includes('successful')) {
+            showSuccessScreen(currentOffer.offeredPrice.toFixed(2));
+        } else {
+            showActionMessage(response, 'error');
+        }
+    }
+
+    function showSuccessScreen(price) {
+        document.getElementById('productDetail').style.display = 'none';
+        document.getElementById('successScreen').style.display = 'block';
+        document.getElementById('successPrice').textContent = price;
+        document.getElementById('successProductName').textContent = currentProduct.name;
+        window.scrollTo(0, 0);
+        setTimeout(() => window.location.href = 'shop.html', 4000);
+    }
+
+    function showState(stateId) {
+        ['state1','state1b','state2','state3','state4'].forEach(id => {
+            document.getElementById(id).style.display = 'none';
+        });
+        document.getElementById(stateId).style.display = 'block';
+    }
+
+    function showMessage(text, type) {
+        const box = document.getElementById('message');
+        box.textContent = text;
+        box.className = `message message-${type}`;
+        box.style.display = 'block';
+    }
+
+    function showActionMessage(text, type) {
+        const box = document.getElementById('actionMessage');
+        box.textContent = text;
+        box.className = `message message-${type}`;
+        box.style.display = 'block'; // ← this line is missing!
+    }
+    </script>
+</body>
+</html>

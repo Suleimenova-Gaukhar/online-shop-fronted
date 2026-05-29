@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop — MagazinOnline</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <div id="navbar"></div>
+
+    <!-- PAGE CONTENT -->
+    <div class="page-wrapper">
+
+        <h1 class="page-title">Shop</h1>
+
+        <!-- SEARCH BAR -->
+        <div class="shop-search">
+            <input 
+                type="text" 
+                id="searchInput" 
+                placeholder="Search products by name or description..."
+                oninput="filterProducts()"
+            >
+        </div>
+
+        <!-- ERROR MESSAGE -->
+        <div id="message" class="message" style="display:none;"></div>
+
+        <!-- PRODUCT GRID -->
+        <div class="product-grid" id="productGrid"></div>
+
+        <!-- EMPTY STATE -->
+        <div class="empty-state" id="emptyState" style="display:none;">
+            <p>No products found.</p>
+            <p>Try a different search or check back later!</p>
+        </div>
+
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+        <span>MagazinOnline</span>
+        <div>
+            <a href="index.html">Home</a>
+            <a href="shop.html">Shop</a>
+        </div>
+    </footer>
+
+    <script src="js/auth.js"></script>
+    <script src="js/navbar.js"></script>
+    <script src="js/api.js"></script>
+    <script>
+        let allProducts = [];
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            await loadProducts();
+        });
+
+        async function loadProducts() {
+            try {
+                allProducts = await getAllProducts();
+                renderProducts(allProducts);
+            } catch (error) {
+                showMessage('Cannot connect to server. Make sure the backend is running.', 'error');
+            }
+        }
+
+        function renderProducts(products) {
+            const grid = document.getElementById('productGrid');
+            const emptyState = document.getElementById('emptyState');
+
+            if (products.length === 0) {
+                grid.innerHTML = '';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            grid.innerHTML = products.map(product => `
+                <div class="card" onclick="goToProduct(${product.id})" style="cursor:pointer;">
+                    <div class="card-body">
+                        <span class="badge ${product.negotiable ? 
+                            'badge-negotiable' : 'badge-fixed'}">
+                            ${product.negotiable ? 'Negotiable' : 'Fixed Price'}
+                        </span>
+                        <div class="card-title">${product.name}</div>
+                        <div class="card-price">€${product.price.toFixed(2)}</div>
+                        <div class="card-description">${product.description}</div>
+                        <div class="card-seller">Seller: ${product.sellerEmail}</div>
+                        <button class="btn btn-primary" style="width:100%; margin-top:8px;">
+                            View Product
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterProducts() {
+            const query = document.getElementById('searchInput')
+                .value.toLowerCase().trim();
+
+            if (!query) {
+                renderProducts(allProducts);
+                return;
+            }
+
+            const filtered = allProducts.filter(product =>
+                product.name.toLowerCase().includes(query) ||
+                product.description.toLowerCase().includes(query)
+            );
+
+            renderProducts(filtered);
+        }
+
+        function goToProduct(productId) {
+            window.location.href = `product-detail.html?id=${productId}`;
+        }
+
+        function showMessage(text, type) {
+            const box = document.getElementById('message');
+            box.textContent = text;
+            box.className = `message message-${type}`;
+            box.style.display = 'block';
+        }
+    </script>
+
+</body>
+</html>
