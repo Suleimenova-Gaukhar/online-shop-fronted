@@ -1,6 +1,16 @@
 const BASE_URL = 'http://localhost:8080';
+//BACKEDN API COMMUNICATION
 
-// ============ AUTH ============
+//Done by Gaukhar Suleimenova
+
+/*
+This file contains all the functions that communicate with the backend.
+Every endpoint from the Spring Boot backend has a corresponding function here.
+Instead of writing fetch() calls scattered across every page, we keep them 
+all in one place — so if anything changes in the backend, we only fix it here.
+*/
+
+// Everything related to registering and logging in users
 
 async function registerBuyer(email, password) {
     const response = await fetch(`${BASE_URL}/auth/registerBuyer`, {
@@ -29,7 +39,7 @@ async function login(email, password) {
     return response.text();
 }
 
-// ============ PRODUCTS ============
+// Everything related to browsing and managing products
 
 async function getAllProducts() {
     const response = await fetch(`${BASE_URL}/products`);
@@ -52,7 +62,7 @@ async function deleteProduct(productId, sellerEmail) {
     return response.text();
 }
 
-// ============ OFFERS ============
+// Everything related to price negotiation between buyers and sellers
 
 async function makeOffer(productId, buyerEmail, offeredPrice) {
     const response = await fetch(`${BASE_URL}/offers`, {
@@ -97,7 +107,7 @@ async function getOfferByProductAndBuyer(productId, buyerEmail) {
     }
 }
 
-// ============ PURCHASE ============
+// Everything related to completing a sale
 
 async function purchaseProduct(productId, buyerEmail) {
     const response = await fetch(`${BASE_URL}/purchase/${productId}?buyerEmail=${buyerEmail}`, {
@@ -111,7 +121,7 @@ async function getSaleHistory() {
     return response.json();
 }
 
-// ============ ADMIN ============
+// Everything related to admin managing seller accounts
 
 async function getAllSellers() {
     const response = await fetch(`${BASE_URL}/admin/sellers`);

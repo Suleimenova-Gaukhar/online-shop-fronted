@@ -1,3 +1,4 @@
+<!--Page made by Daria Mazareanu-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,20 +9,20 @@
 </head>
 <body>
 
-    <!-- NAVBAR — filled automatically by navbar.js -->
+    <!-- Navbar loading from navbar.js -->
     <div id="navbar"></div>
 
-    <!-- HERO SECTION -->
+    <!-- Hero section -->
     <section class="hero">
         <h1>Welcome to MagazinOnline!</h1>
         <p>Start Shopping now!</p>
         <div class="hero-search">
             <input type="text" id="searchInput" placeholder="Search products...">
-            <button onclick="window.location.href='shop.html'">Shop</button>
+            <button onclick="goToShopWithSearch()">Shop</button>
         </div>
     </section>
 
-    <!-- FEATURED CATEGORIES — hardcoded, decorative only -->
+    <!-- Decorative category cards -->
     <div class="page-wrapper">
         <h2 class="section-title" style="text-align:center; margin-bottom: 32px;">
             Our Products
@@ -51,16 +52,16 @@
 
         </div>
 
-        <!-- SELLER CTA BANNER -->
+        <!-- Seller banner for fast registration -->
         <div class="cta-banner">
             <h2>New entrepreneur?</h2>
             <p>Start Selling now!</p>
-            <a href="register.html" class="btn btn-primary">Register as Seller</a>
+            <a href="register.html?role=seller" class="btn btn-primary">Register as Seller</a>
         </div>
 
     </div>
 
-    <!-- FOOTER -->
+    <!-- Footer -->
     <footer>
         <span>MagazinOnline</span>
         <div>
@@ -69,9 +70,21 @@
         </div>
     </footer>
 
-    <!-- SCRIPTS — order matters! auth first, then navbar -->
+    <!-- All the necessary js scripts (first authentification, then navbar loading) -->
     <script src="js/auth.js"></script>
     <script src="js/navbar.js"></script>
+
+    <!--Short script for the search bar functionality, that redirects to the shop page with the items searched (Added by Gaukhar Suleimenova)-->>
+    <script>
+        function goToShopWithSearch() {
+            const query = document.getElementById('searchInput').value.trim();
+            if (query) {
+                window.location.href = `shop.html?search=${encodeURIComponent(query)}`;
+            } else {
+                window.location.href = 'shop.html';
+            }
+        }
+    </script>
 
 </body>
 </html>

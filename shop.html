@@ -1,3 +1,4 @@
+<!--Page done and completed by Gaukhar Suleimenova-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,15 +9,14 @@
 </head>
 <body>
 
-    <!-- NAVBAR -->
+    <!-- Loading the navbar from folder js/navbar.js -->
     <div id="navbar"></div>
 
-    <!-- PAGE CONTENT -->
     <div class="page-wrapper">
 
         <h1 class="page-title">Shop</h1>
 
-        <!-- SEARCH BAR -->
+        <!-- Search bar -->
         <div class="shop-search">
             <input 
                 type="text" 
@@ -26,13 +26,12 @@
             >
         </div>
 
-        <!-- ERROR MESSAGE -->
+        <!--Communication with the user: -->
+
         <div id="message" class="message" style="display:none;"></div>
 
-        <!-- PRODUCT GRID -->
         <div class="product-grid" id="productGrid"></div>
 
-        <!-- EMPTY STATE -->
         <div class="empty-state" id="emptyState" style="display:none;">
             <p>No products found.</p>
             <p>Try a different search or check back later!</p>
@@ -40,7 +39,7 @@
 
     </div>
 
-    <!-- FOOTER -->
+    <!-- footer or lower navbar -->
     <footer>
         <span>MagazinOnline</span>
         <div>
@@ -52,11 +51,20 @@
     <script src="js/auth.js"></script>
     <script src="js/navbar.js"></script>
     <script src="js/api.js"></script>
+    <!--Getting everything together for the shop page/communication with the backend!-->
     <script>
         let allProducts = [];
 
         document.addEventListener('DOMContentLoaded', async function() {
             await loadProducts();
+
+            // Check if coming from homepage with a search query
+            const params = new URLSearchParams(window.location.search);
+            const query = params.get('search');
+            if (query) {
+                document.getElementById('searchInput').value = query;
+                filterProducts();
+            }
         });
 
         async function loadProducts() {
@@ -79,8 +87,12 @@
             }
 
             emptyState.style.display = 'none';
+
+            const isSeller = isLoggedIn() && isRole('SELLER');
+
             grid.innerHTML = products.map(product => `
-                <div class="card" onclick="goToProduct(${product.id})" style="cursor:pointer;">
+                <div class="card" onclick="${isSeller ? '' : `goToProduct(${product.id})`}" 
+                    style="cursor:${isSeller ? 'default' : 'pointer'};">
                     <div class="card-body">
                         <span class="badge ${product.negotiable ? 
                             'badge-negotiable' : 'badge-fixed'}">
@@ -90,9 +102,15 @@
                         <div class="card-price">€${product.price.toFixed(2)}</div>
                         <div class="card-description">${product.description}</div>
                         <div class="card-seller">Seller: ${product.sellerEmail}</div>
-                        <button class="btn btn-primary" style="width:100%; margin-top:8px;">
-                            View Product
-                        </button>
+                        ${!isSeller ? `
+                            <button class="btn btn-primary" style="width:100%; margin-top:8px;">
+                                View Product
+                            </button>
+                        ` : `
+                            <p style="color:var(--grey-text); font-size:0.85rem; margin-top:8px;">
+                                Sellers cannot purchase products.
+                            </p>
+                        `}
                     </div>
                 </div>
             `).join('');

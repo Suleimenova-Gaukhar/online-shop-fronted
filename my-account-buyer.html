@@ -1,0 +1,127 @@
+<!--Page made by Daria Mazareanu-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Account — MagazinOnline</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <div id="navbar"></div>
+
+    <div class="page-wrapper">
+
+        <!-- Personal Info -->
+        <div class="dashboard-section">
+            <h2 class="section-title">My Personal Information</h2>
+            <div class="account-info">
+                <div class="account-info-row">
+                    <span class="account-info-label">Email</span>
+                    <span class="account-info-value" id="displayEmail"></span>
+                </div>
+                <div class="account-info-row">
+                    <span class="account-info-label">Account Type</span>
+                    <span class="account-info-value">
+                        <span class="badge badge-active">Buyer</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order history -->
+        <div class="dashboard-section">
+            <h2 class="section-title">My Order History</h2>
+            <div id="historyMessage" class="message" style="display:none;"></div>
+            <table class="data-table" id="historyTable" style="display:none;">
+                <thead>
+                    <tr>
+                        <th>Transaction ID</th>
+                        <th>Product</th>
+                        <th>Seller</th>
+                        <th>Final Price</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody id="buyerTableBody"></tbody>
+            </table>
+            <div id="historyEmpty" class="empty-state" style="display:none;">
+                <p>You haven't purchased anything yet.</p>
+                <a href="shop.html" class="btn btn-primary">
+                    Browse Products
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        <span>MagazinOnline</span>
+        <div>
+            <a href="index.html">Home</a>
+            <a href="shop.html">Shop</a>
+        </div>
+    </footer>
+
+    <script src="js/auth.js"></script>
+    <script src="js/navbar.js"></script>
+    <script src="js/api.js"></script>
+
+<!--Script for personal information display, order history fetching, and veryfying the user is logged in as a proper account-->
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!isLoggedIn() || !isRole('BUYER')) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const user = getUser();
+
+            // Fill personal info
+            document.getElementById('displayEmail').textContent = 
+                user.email;
+
+            // Load order history
+            try {
+                const allHistory = await getSaleHistory();
+                const myPurchases = allHistory.filter(
+                    o => o.buyerEmail === user.email
+                );
+
+                const tbody = document.getElementById('buyerTableBody');
+                const table = document.getElementById('historyTable');
+                const empty = document.getElementById('historyEmpty');
+
+                if (myPurchases.length === 0) {
+                    empty.style.display = 'block';
+                    return;
+                }
+
+                table.style.display = 'table';
+                myPurchases.forEach(o => {
+                    const date = new Date(o.soldAt).toLocaleDateString('en-GB');
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>#${o.id}</td>
+                            <td>${o.productName}</td>
+                            <td>${o.sellerEmail}</td>
+                            <td>€${o.finalPrice.toFixed(2)}</td>
+                            <td>${date}</td>
+                        </tr>
+                    `;
+                });
+
+            } catch (e) {
+                document.getElementById('historyMessage').textContent = 
+                    'Cannot connect to server.';
+                document.getElementById('historyMessage').className = 
+                    'message message-error';
+                document.getElementById('historyMessage').style.display = 'block';
+            }
+        });
+    </script>
+
+</body>
+</html>

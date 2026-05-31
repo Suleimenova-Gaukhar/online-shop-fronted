@@ -1,3 +1,4 @@
+<!--Page done and completed by Gaukhar Suleimenova-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,7 +15,7 @@
 
         <h1 class="page-title">My Business</h1>
 
-        <!-- ============ PENDING OFFERS SECTION ============ -->
+        <!-- Section for all the pending offers made by buyers -->
         <div class="dashboard-section">
             <h2 class="section-title">Pending Requests</h2>
             <div id="offersMessage" class="message" style="display:none;"></div>
@@ -24,7 +25,7 @@
             </div>
         </div>
 
-        <!-- ============ MY PRODUCTS SECTION ============ -->
+        <!-- Product selection of the seller -->
         <div class="dashboard-section">
             <h2 class="section-title">My Products</h2>
             <div id="productsMessage" class="message" style="display:none;"></div>
@@ -34,7 +35,7 @@
             </div>
         </div>
 
-        <!-- ============ ADD PRODUCT SECTION ============ -->
+        <!-- Adding more products -->
         <div class="dashboard-section">
             <h2 class="section-title">Add New Product</h2>
             <div id="addMessage" class="message" style="display:none;"></div>
@@ -102,7 +103,6 @@
             await loadMyProducts();
         });
 
-        // ============ OFFERS ============
         async function loadOffers() {
             const user = getUser();
             const offersList = document.getElementById('offersList');
@@ -174,7 +174,6 @@
             }
         }
 
-        // ============ PRODUCTS ============
         async function loadMyProducts() {
             const user = getUser();
             try {
@@ -229,7 +228,6 @@
             }
         }
 
-        // ============ ADD PRODUCT ============
         function toggleMinPrice() {
             const negotiable = document.getElementById('productNegotiable').checked;
             document.getElementById('minPriceGroup').style.display = 
@@ -280,7 +278,7 @@
             }
         }
 
-        // ============ HELPERS ============
+       //temporary feedback message with a 4 seconds timer
         function showSectionMessage(elementId, text, type) {
             const box = document.getElementById(elementId);
             box.textContent = text;

@@ -1,3 +1,10 @@
+//Navbar builder
+//Done by Gaukhar Suleimenova
+
+/*Builds the navbar automatically on every page based on who is logged in.
+Instead of writing navbar HTML manually in every page, each page just has
+an empty <div id="navbar"></div> and this file fills it in correctly.*/
+
 function buildNavbar() {
     const user = getUser();
     
@@ -19,7 +26,7 @@ function buildNavbar() {
     let rightSide = '';
 
     if (!user) {
-        // Not logged in → show Login and Sign Up buttons
+        // Not logged in -> show Login and Sign Up buttons
         rightSide = `
             <div class="navbar-right">
                 <a href="login.html" class="btn btn-outline">Log In</a>
@@ -35,7 +42,7 @@ function buildNavbar() {
                         My Account ▾
                     </button>
                     <div class="dropdown-menu">
-                        <a href="account-buyer.html">Account Settings</a>
+                        <a href="my-account-buyer.html">Account Settings</a>
                         <a href="#" onclick="logOut()">Log Out</a>
                     </div>
                 </div>
@@ -50,7 +57,7 @@ function buildNavbar() {
                         My Account ▾
                     </button>
                     <div class="dropdown-menu">
-                        <a href="account-seller.html">Account Settings</a>
+                        <a href="my-account-seller.html">Account Settings</a>
                         <a href="seller-dashboard.html">My Business</a>
                         <a href="#" onclick="logOut()">Log Out</a>
                     </div>

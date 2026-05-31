@@ -1,0 +1,190 @@
+<!--Page made by Daria Mazareanu-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard — MagazinOnline</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <div id="navbar"></div>
+
+    <div class="page-wrapper">
+        <h1 class="page-title">Administrator Dashboard</h1>
+
+        <!-- Section for all of the applications that are pending request -->
+        <div class="dashboard-section">
+            <h2 class="section-title">Pending Requests</h2>
+            <div id="pendingMessage" class="message" style="display:none;"></div>
+            <div id="pendingList"></div>
+            <div id="pendingEmpty" class="empty-state" style="display:none;">
+                <p>No pending seller registrations.</p>
+            </div>
+        </div>
+
+        <!-- All sellers -->
+        <div class="dashboard-section">
+            <h2 class="section-title">All Registered Sellers</h2>
+            <div id="sellersMessage" class="message" style="display:none;"></div>
+            <table class="data-table" id="sellersTable" style="display:none;">
+                <thead>
+                    <tr>
+                        <th>Email</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="sellerTableBody"></tbody>
+            </table>
+            <div id="sellersEmpty" class="empty-state" style="display:none;">
+                <p>No sellers registered yet.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        <span>MagazinOnline</span>
+        <div>
+            <a href="index.html">Home</a>
+            <a href="shop.html">Shop</a>
+        </div>
+    </footer>
+
+    <script src="js/auth.js"></script>
+    <script src="js/navbar.js"></script>
+    <script src="js/api.js"></script>
+
+    <!--Script for the admin/manager functionalities-->
+
+    <script>
+        let allSellers = [];
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!isLoggedIn() || !isRole('ADMIN')) {
+                window.location.href = 'login.html';
+                return;
+            }
+            await loadSellers();
+        });
+
+        async function loadSellers() {
+            try {
+                allSellers = await getAllSellers();
+                renderPending();
+                renderAllSellers();
+            } catch (e) {
+                showSectionMessage('sellersMessage', 
+                    'Cannot connect to server.', 'error');
+            }
+        }
+
+        function renderPending() {
+            const pendingList = document.getElementById('pendingList');
+            const pendingEmpty = document.getElementById('pendingEmpty');
+            pendingList.innerHTML = '';
+            pendingEmpty.style.display = 'none';
+
+            const pending = allSellers.filter(s => !s.approved && s.active);
+
+            if (pending.length === 0) {
+                pendingEmpty.style.display = 'block';
+                return;
+            }
+
+            pendingList.innerHTML = pending.map(s => `
+                <div class="offer-card">
+                    <div class="offer-info">
+                        <div class="offer-product">${s.email}</div>
+                        <div class="offer-buyer">Requested seller registration</div>
+                    </div>
+                    <div class="offer-actions">
+                        <button class="btn btn-success" onclick="doApprove(${s.id})">
+                            Approve
+                        </button>
+                        <button class="btn btn-danger" onclick="doDeactivate(${s.id})">
+                            Decline
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderAllSellers() {
+            const tbody = document.getElementById('sellerTableBody');
+            const table = document.getElementById('sellersTable');
+            const empty = document.getElementById('sellersEmpty');
+
+            tbody.innerHTML = '';
+
+            const approved = allSellers.filter(s => s.approved);
+
+            if (approved.length === 0) {
+                empty.style.display = 'block';
+                table.style.display = 'none';
+                return;
+            }
+
+            table.style.display = 'table';
+            approved.forEach(s => {
+                const isActive = s.active !== false;
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${s.email}</td>
+                        <td>
+                            <span class="badge ${isActive ? 
+                                'badge-active' : 'badge-deactivated'}">
+                                ${isActive ? 'Active' : 'Deactivated'}
+                            </span>
+                        </td>
+                        <td>
+                            ${isActive ? `
+                                <button class="btn btn-danger" 
+                                    onclick="doDeactivate(${s.id})">
+                                    Deactivate
+                                </button>
+                            ` : `
+                                <span style="color:var(--grey-text); 
+                                    font-size:0.85rem;">
+                                    Account deactivated
+                                </span>
+                            `}
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        async function doApprove(id) {
+            const response = await approveSeller(id);
+            if (response.includes('successfully')) {
+                showSectionMessage('pendingMessage', 
+                    'Seller approved successfully!', 'success');
+            }
+            await loadSellers();
+        }
+
+        async function doDeactivate(id) {
+            if (!confirm('Are you sure you want to deactivate this seller? ' +
+                'They will no longer be able to log in.')) return;
+            const response = await deactivateSeller(id);
+            if (response.includes('successfully')) {
+                showSectionMessage('sellersMessage', 
+                    'Seller deactivated successfully!', 'success');
+            }
+            await loadSellers();
+        }
+
+        function showSectionMessage(elementId, text, type) {
+            const box = document.getElementById(elementId);
+            box.textContent = text;
+            box.className = `message message-${type}`;
+            box.style.display = 'block';
+            setTimeout(() => box.style.display = 'none', 4000);
+        }
+    </script>
+
+</body>
+</html>

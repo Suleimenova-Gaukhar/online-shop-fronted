@@ -1,3 +1,11 @@
+//User session management logic
+//Done by Gaukhar Suleimenova
+
+/*This file manages the login state across all pages of the website.
+ Since the backend has no session system, we store the logged-in user's
+ data in localStorage so every page knows who is currently logged in.*/
+
+
 // Saves user info after login
 function saveUser(email, role, name) {
     localStorage.setItem('userEmail', email);

@@ -1,3 +1,4 @@
+<!--Page done and completed by Gaukhar Suleimenova-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,14 +9,12 @@
 </head>
 <body>
 
-    <!-- NAVBAR -->
     <div id="navbar"></div>
 
-    <!-- PAGE CONTENT -->
     <div class="page-wrapper">
 
 
-    <!-- SUCCESS SCREEN — at the top -->
+    <!-- Page informing about the successful purchase -->
     <div id="successScreen" style="display:none;">
         <div class="success-screen">
             <div class="success-icon">✓</div>
@@ -29,22 +28,18 @@
         </div>
     </div>
 
-        <!-- BACK BUTTON -->
         <a href="shop.html" class="btn btn-outline" 
             style="color:var(--navy); border-color:var(--grey-mid); 
                    margin-bottom:32px; display:inline-block;">
             ← Back to Shop
         </a>
 
-        <!-- ERROR MESSAGE -->
         <div id="message" class="message" style="display:none;"></div>
 
-        <!-- PRODUCT DETAIL CARD -->
         <div id="productDetail" style="display:none;">
 
             <div class="product-detail-card">
 
-                <!-- LEFT — product info -->
                 <div class="product-detail-info">
                     <span class="badge" id="negotiableBadge"></span>
                     <h1 class="product-detail-name" id="productName"></h1>
@@ -53,10 +48,8 @@
                     <p class="product-detail-description" id="productDescription"></p>
                 </div>
 
-                <!-- RIGHT — actions -->
                 <div class="product-detail-actions">
 
-                    <!-- Action message (offer status etc) -->
                     <div id="actionMessage" class="message" style="display:none;"></div>
 
                     <!-- STATE 1: negotiable, no offer yet -->
@@ -135,8 +128,6 @@
 
     </div>
 
-
-    <!-- FOOTER -->
     <footer>
         <span>MagazinOnline</span>
         <div>
@@ -148,168 +139,175 @@
     <script src="js/auth.js"></script>
     <script src="js/navbar.js"></script>
     <script src="js/api.js"></script>
+
+    <!--JS logic for loading the product details (first and foremost we don't let the sellers to be able to purchase items!)-->
     <script>
         let currentProduct = null;
-    let currentOffer = null;
+            let currentOffer = null;
 
-    document.addEventListener('DOMContentLoaded', async function() {
-        if (!isLoggedIn()) {
-            window.location.href = 'login.html';
-            return;
-        }
+            document.addEventListener('DOMContentLoaded', async function() {
+                if (!isLoggedIn()) {
+                    window.location.href = 'login.html';
+                    return;
+                }
 
-        const params = new URLSearchParams(window.location.search);
-        const productId = params.get('id');
+                if (isRole('SELLER')) {
+                    window.location.href = 'shop.html';
+                    return;
+                }
 
-        if (!productId) {
-            showMessage('Product not found.', 'error');
-            return;
-        }
+                const params = new URLSearchParams(window.location.search);
+                const productId = params.get('id');
 
-        try {
-            const products = await getAllProducts();
-            currentProduct = products.find(p => p.id == productId);
+                if (!productId) {
+                    showMessage('Product not found.', 'error');
+                    return;
+                }
 
-            if (!currentProduct) {
-                showMessage('Product not found or no longer available.', 'error');
+                try {
+                    const products = await getAllProducts();
+                    currentProduct = products.find(p => p.id == productId);
+
+                    if (!currentProduct) {
+                        showMessage('Product not found or no longer available.', 'error');
+                        return;
+                    }
+
+                    // Fill in product info
+                    document.getElementById('productName').textContent = currentProduct.name;
+                    document.getElementById('productPrice').textContent = 
+                        `€${currentProduct.price.toFixed(2)}`;
+                    document.getElementById('productSeller').textContent = 
+                        `Seller: ${currentProduct.sellerEmail}`;
+                    document.getElementById('productDescription').textContent = 
+                        currentProduct.description;
+
+                    const badge = document.getElementById('negotiableBadge');
+                    badge.textContent = currentProduct.negotiable ? 'Negotiable' : 'Fixed Price';
+                    badge.className = `badge ${currentProduct.negotiable ? 
+                        'badge-negotiable' : 'badge-fixed'}`;
+
+                    document.getElementById('productDetail').style.display = 'block';
+
+                    if (!currentProduct.negotiable) {
+                        showState('state2');
+                        document.getElementById('fixedPrice2').textContent = 
+                            currentProduct.price.toFixed(2);
+                    } else {
+                        const user = getUser();
+                        currentOffer = await getOfferByProductAndBuyer(
+                            currentProduct.id, user.email
+                        );
+
+                        if (!currentOffer) {
+                            showState('state1');
+                        } else if (currentOffer.status === 'PENDING') {
+                            showState('state1b');
+                        } else if (currentOffer.status === 'REJECTED') {
+                            showState('state3');
+                        } else if (currentOffer.status === 'APPROVED') {
+                            showState('state4');
+                            document.getElementById('approvedPrice').textContent = 
+                                currentOffer.offeredPrice.toFixed(2);
+                        }
+                    }
+
+                } catch (error) {
+                    console.log('Error:', error);
+                    showMessage('Cannot connect to server. Make sure the backend is running.', 'error');
+                }
+            });
+
+            async function submitOffer() {
+            const priceInput = document.getElementById('offerPrice');
+            const price = parseFloat(priceInput.value);
+
+            if (!price || price <= 0) {
+                showActionMessage('Please enter a valid price.', 'error');
                 return;
             }
 
-            // Fill in product info
-            document.getElementById('productName').textContent = currentProduct.name;
-            document.getElementById('productPrice').textContent = 
-                `€${currentProduct.price.toFixed(2)}`;
-            document.getElementById('productSeller').textContent = 
-                `Seller: ${currentProduct.sellerEmail}`;
-            document.getElementById('productDescription').textContent = 
-                currentProduct.description;
+            const user = getUser();
+            const response = await makeOffer(currentProduct.id, user.email, price);
 
-            const badge = document.getElementById('negotiableBadge');
-            badge.textContent = currentProduct.negotiable ? 'Negotiable' : 'Fixed Price';
-            badge.className = `badge ${currentProduct.negotiable ? 
-                'badge-negotiable' : 'badge-fixed'}`;
-
-            document.getElementById('productDetail').style.display = 'block';
-
-            if (!currentProduct.negotiable) {
-                showState('state2');
-                document.getElementById('fixedPrice2').textContent = 
-                    currentProduct.price.toFixed(2);
+            if (response.includes('successfully')) {
+                showActionMessage('Offer sent successfully!', 'success');
+                setTimeout(() => location.reload(), 1500);
             } else {
-                const user = getUser();
-                currentOffer = await getOfferByProductAndBuyer(
-                    currentProduct.id, user.email
-                );
+                // Show whatever the backend returns directly
+                showActionMessage(response, 'error');
+            }
+        }
 
-                if (!currentOffer) {
-                    showState('state1');
-                } else if (currentOffer.status === 'PENDING') {
-                    showState('state1b');
-                } else if (currentOffer.status === 'REJECTED') {
-                    showState('state3');
-                } else if (currentOffer.status === 'APPROVED') {
-                    showState('state4');
-                    document.getElementById('approvedPrice').textContent = 
-                        currentOffer.offeredPrice.toFixed(2);
+        async function submitOfferRetry() {
+            const priceInput = document.getElementById('offerPriceRetry');
+            const price = parseFloat(priceInput.value);
+
+            if (!price || price <= 0) {
+                showActionMessage('Please enter a valid price.', 'error');
+                return;
+            }
+
+            const user = getUser();
+            const response = await makeOffer(currentProduct.id, user.email, price);
+
+            if (response.includes('successfully')) {
+                showActionMessage('New offer sent successfully!', 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showActionMessage(response, 'error');
+            }
+        }
+
+            async function buyFixed() {
+                const user = getUser();
+                const response = await purchaseProduct(currentProduct.id, user.email);
+                if (response.includes('successful')) {
+                    showSuccessScreen(currentProduct.price.toFixed(2));
+                } else {
+                    showActionMessage(response, 'error');
                 }
             }
 
-        } catch (error) {
-            console.log('Error:', error);
-            showMessage('Cannot connect to server. Make sure the backend is running.', 'error');
-        }
-    });
+            async function buyApproved() {
+                const user = getUser();
+                const response = await purchaseProduct(currentProduct.id, user.email);
+                if (response.includes('successful')) {
+                    showSuccessScreen(currentOffer.offeredPrice.toFixed(2));
+                } else {
+                    showActionMessage(response, 'error');
+                }
+            }
 
-    async function submitOffer() {
-    const priceInput = document.getElementById('offerPrice');
-    const price = parseFloat(priceInput.value);
+            function showSuccessScreen(price) {
+                document.getElementById('productDetail').style.display = 'none';
+                document.getElementById('successScreen').style.display = 'block';
+                document.getElementById('successPrice').textContent = price;
+                document.getElementById('successProductName').textContent = currentProduct.name;
+                window.scrollTo(0, 0);
+                setTimeout(() => window.location.href = 'shop.html', 4000);
+            }
 
-    if (!price || price <= 0) {
-        showActionMessage('Please enter a valid price.', 'error');
-        return;
-    }
+            function showState(stateId) {
+                ['state1','state1b','state2','state3','state4'].forEach(id => {
+                    document.getElementById(id).style.display = 'none';
+                });
+                document.getElementById(stateId).style.display = 'block';
+            }
 
-    const user = getUser();
-    const response = await makeOffer(currentProduct.id, user.email, price);
+            function showMessage(text, type) {
+                const box = document.getElementById('message');
+                box.textContent = text;
+                box.className = `message message-${type}`;
+                box.style.display = 'block';
+            }
 
-    if (response.includes('successfully')) {
-        showActionMessage('Offer sent successfully!', 'success');
-        setTimeout(() => location.reload(), 1500);
-    } else {
-        // Show whatever the backend returns directly
-        showActionMessage(response, 'error');
-    }
-}
-
-async function submitOfferRetry() {
-    const priceInput = document.getElementById('offerPriceRetry');
-    const price = parseFloat(priceInput.value);
-
-    if (!price || price <= 0) {
-        showActionMessage('Please enter a valid price.', 'error');
-        return;
-    }
-
-    const user = getUser();
-    const response = await makeOffer(currentProduct.id, user.email, price);
-
-    if (response.includes('successfully')) {
-        showActionMessage('New offer sent successfully!', 'success');
-        setTimeout(() => location.reload(), 1500);
-    } else {
-        showActionMessage(response, 'error');
-    }
-}
-
-    async function buyFixed() {
-        const user = getUser();
-        const response = await purchaseProduct(currentProduct.id, user.email);
-        if (response.includes('successful')) {
-            showSuccessScreen(currentProduct.price.toFixed(2));
-        } else {
-            showActionMessage(response, 'error');
-        }
-    }
-
-    async function buyApproved() {
-        const user = getUser();
-        const response = await purchaseProduct(currentProduct.id, user.email);
-        if (response.includes('successful')) {
-            showSuccessScreen(currentOffer.offeredPrice.toFixed(2));
-        } else {
-            showActionMessage(response, 'error');
-        }
-    }
-
-    function showSuccessScreen(price) {
-        document.getElementById('productDetail').style.display = 'none';
-        document.getElementById('successScreen').style.display = 'block';
-        document.getElementById('successPrice').textContent = price;
-        document.getElementById('successProductName').textContent = currentProduct.name;
-        window.scrollTo(0, 0);
-        setTimeout(() => window.location.href = 'shop.html', 4000);
-    }
-
-    function showState(stateId) {
-        ['state1','state1b','state2','state3','state4'].forEach(id => {
-            document.getElementById(id).style.display = 'none';
-        });
-        document.getElementById(stateId).style.display = 'block';
-    }
-
-    function showMessage(text, type) {
-        const box = document.getElementById('message');
-        box.textContent = text;
-        box.className = `message message-${type}`;
-        box.style.display = 'block';
-    }
-
-    function showActionMessage(text, type) {
-        const box = document.getElementById('actionMessage');
-        box.textContent = text;
-        box.className = `message message-${type}`;
-        box.style.display = 'block'; // ← this line is missing!
-    }
+            function showActionMessage(text, type) {
+                const box = document.getElementById('actionMessage');
+                box.textContent = text;
+                box.className = `message message-${type}`;
+                box.style.display = 'block'; 
+            }
     </script>
 </body>
 </html>

@@ -1,0 +1,126 @@
+<!--Page made by Daria Mazareanu-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register — MagazinOnline</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <div id="navbar"></div>
+
+    <div class="form-wrapper">
+        <h2 class="form-title">Create an Account</h2>
+
+        <div id="message" class="message" style="display:none;"></div>
+
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" placeholder="Enter your email">
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="Enter your password">
+        </div>
+
+        <div class="form-group">
+            <label for="confirmPassword">Confirm Password</label>
+            <input type="password" id="confirmPassword" 
+                placeholder="Confirm your password">
+        </div>
+
+        <div class="form-group">
+            <label for="role">I want to:</label>
+            <select id="role" style="width:100%; padding:10px; 
+                border:1px solid var(--grey-mid); border-radius:6px; 
+                font-size:0.95rem; color:var(--navy); background:white;">
+                <option value="BUYER">Shop as a Buyer</option>
+                <option value="SELLER">Sell as a Business</option>
+            </select>
+        </div>
+
+        <button class="btn btn-primary" style="width:100%; margin-top:10px;" 
+            onclick="handleRegister()">
+            Create Account
+        </button>
+
+        <p class="form-link">
+            Already have an account? <a href="login.html">Log In</a>
+        </p>
+    </div>
+
+    <footer>
+        <span>MagazinOnline</span>
+        <div>
+            <a href="index.html">Home</a>
+            <a href="shop.html">Shop</a>
+        </div>
+    </footer>
+
+    <script src="js/auth.js"></script>
+    <script src="js/navbar.js"></script>
+    <script src="js/api.js"></script>
+    <script>
+        if (isLoggedIn()) {
+            window.location.href = 'index.html';
+        }
+
+        // Pre-selects the seller account choice when enterging "Register as a seller" on the main page
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('role') === 'seller') {
+            document.getElementById('role').value = 'SELLER';
+        }
+
+        async function handleRegister() {
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const confirmPassword = document.getElementById('confirmPassword').value.trim();
+            const role = document.getElementById('role').value;
+
+            if (!email || !password || !confirmPassword) {
+                showMessage('Please fill in all fields.', 'error');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showMessage('Passwords do not match.', 'error');
+                return;
+            }
+
+            try {
+                let response;
+                if (role === 'BUYER') {
+                    response = await registerBuyer(email, password);
+                } else {
+                    response = await registerSeller(email, password);
+                }
+
+                if (response.includes('successfully') || response.includes('registered')) {
+                    showMessage('Account created successfully! Redirecting to login...', 'success');
+                    setTimeout(() => window.location.href = 'login.html', 2000);
+                } else {
+                    showMessage(response, 'error');
+                }
+
+            } catch (error) {
+                showMessage('Cannot connect to server. Make sure the backend is running.', 'error');
+            }
+        }
+
+        function showMessage(text, type) {
+            const box = document.getElementById('message');
+            box.textContent = text;
+            box.className = `message message-${type}`;
+            box.style.display = 'block';
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') handleRegister();
+        });
+    </script>
+
+</body>
+</html>
